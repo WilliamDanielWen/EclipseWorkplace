@@ -1,0 +1,4 @@
+The weights of dual perceptron by using the linear kernel on percep1.txt are as followings:
+(2.5287325879008775,  5.707170513923707,  8.522314571678631,  11.325607232249276)
+
+The bias is -14.0

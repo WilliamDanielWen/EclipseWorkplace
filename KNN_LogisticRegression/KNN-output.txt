@@ -1,0 +1,88 @@
+When K=1, the accuracies of 5-flod cross-validation in each fold are as followings
+The accuracy of fold 1 is 83.87096774193549 percentage.
+The accuracy of fold 2 is 79.03225806451613 percentage.
+The accuracy of fold 3 is 74.19354838709677 percentage.
+The accuracy of fold 4 is 74.19354838709677 percentage.
+The accuracy of fold 5 is 75.80645161290323 percentage.
+When K=1,the average accuracy of 5 folds is 77.41935483870967 percentage.
+
+When K=3, the accuracies of 5-flod cross-validation in each fold are as followings
+The accuracy of fold 1 is 83.87096774193549 percentage.
+The accuracy of fold 2 is 74.19354838709677 percentage.
+The accuracy of fold 3 is 62.903225806451616 percentage.
+The accuracy of fold 4 is 70.96774193548387 percentage.
+The accuracy of fold 5 is 75.80645161290323 percentage.
+When K=3,the average accuracy of 5 folds is 73.54838709677419 percentage.
+
+When K=5, the accuracies of 5-flod cross-validation in each fold are as followings
+The accuracy of fold 1 is 88.70967741935483 percentage.
+The accuracy of fold 2 is 77.41935483870968 percentage.
+The accuracy of fold 3 is 77.41935483870968 percentage.
+The accuracy of fold 4 is 67.74193548387098 percentage.
+The accuracy of fold 5 is 82.25806451612902 percentage.
+When K=5,the average accuracy of 5 folds is 78.70967741935485 percentage.
+
+When K=7, the accuracies of 5-flod cross-validation in each fold are as followings
+The accuracy of fold 1 is 88.70967741935483 percentage.
+The accuracy of fold 2 is 74.19354838709677 percentage.
+The accuracy of fold 3 is 79.03225806451613 percentage.
+The accuracy of fold 4 is 66.12903225806453 percentage.
+The accuracy of fold 5 is 75.80645161290323 percentage.
+When K=7,the average accuracy of 5 folds is 76.7741935483871 percentage.
+
+When K=9, the accuracies of 5-flod cross-validation in each fold are as followings
+The accuracy of fold 1 is 88.70967741935483 percentage.
+The accuracy of fold 2 is 74.19354838709677 percentage.
+The accuracy of fold 3 is 80.64516129032258 percentage.
+The accuracy of fold 4 is 67.74193548387098 percentage.
+The accuracy of fold 5 is 75.80645161290323 percentage.
+When K=9,the average accuracy of 5 folds is 77.41935483870967 percentage.
+
+When K=11, the accuracies of 5-flod cross-validation in each fold are as followings
+The accuracy of fold 1 is 88.70967741935483 percentage.
+The accuracy of fold 2 is 77.41935483870968 percentage.
+The accuracy of fold 3 is 85.48387096774194 percentage.
+The accuracy of fold 4 is 67.74193548387098 percentage.
+The accuracy of fold 5 is 75.80645161290323 percentage.
+When K=11,the average accuracy of 5 folds is 79.03225806451613 percentage.
+
+When K=13, the accuracies of 5-flod cross-validation in each fold are as followings
+The accuracy of fold 1 is 90.32258064516128 percentage.
+The accuracy of fold 2 is 75.80645161290323 percentage.
+The accuracy of fold 3 is 83.87096774193549 percentage.
+The accuracy of fold 4 is 72.58064516129032 percentage.
+The accuracy of fold 5 is 75.80645161290323 percentage.
+When K=13,the average accuracy of 5 folds is 79.6774193548387 percentage.
+
+When K=15, the accuracies of 5-flod cross-validation in each fold are as followings
+The accuracy of fold 1 is 88.70967741935483 percentage.
+The accuracy of fold 2 is 77.41935483870968 percentage.
+The accuracy of fold 3 is 83.87096774193549 percentage.
+The accuracy of fold 4 is 70.96774193548387 percentage.
+The accuracy of fold 5 is 79.03225806451613 percentage.
+When K=15,the average accuracy of 5 folds is 80.0 percentage.
+
+When K=17, the accuracies of 5-flod cross-validation in each fold are as followings
+The accuracy of fold 1 is 90.32258064516128 percentage.
+The accuracy of fold 2 is 79.03225806451613 percentage.
+The accuracy of fold 3 is 79.03225806451613 percentage.
+The accuracy of fold 4 is 72.58064516129032 percentage.
+The accuracy of fold 5 is 80.64516129032258 percentage.
+When K=17,the average accuracy of 5 folds is 80.32258064516128 percentage.
+
+When K=19, the accuracies of 5-flod cross-validation in each fold are as followings
+The accuracy of fold 1 is 87.09677419354838 percentage.
+The accuracy of fold 2 is 79.03225806451613 percentage.
+The accuracy of fold 3 is 77.41935483870968 percentage.
+The accuracy of fold 4 is 74.19354838709677 percentage.
+The accuracy of fold 5 is 80.64516129032258 percentage.
+When K=19,the average accuracy of 5 folds is 79.6774193548387 percentage.
+
+When K=21, the accuracies of 5-flod cross-validation in each fold are as followings
+The accuracy of fold 1 is 87.09677419354838 percentage.
+The accuracy of fold 2 is 79.03225806451613 percentage.
+The accuracy of fold 3 is 79.03225806451613 percentage.
+The accuracy of fold 4 is 72.58064516129032 percentage.
+The accuracy of fold 5 is 80.64516129032258 percentage.
+When K=21,the average accuracy of 5 folds is 79.6774193548387 percentage.
+

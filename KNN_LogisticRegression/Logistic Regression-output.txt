@@ -1,0 +1,8 @@
+The accuracies of 5-flod cross-validation in each fold are as followings
+The accuracy of fold 1 is 82.25806451612902 percentage.
+The accuracy of fold 2 is 93.5483870967742 percentage.
+The accuracy of fold 3 is 87.09677419354838 percentage.
+The accuracy of fold 4 is 77.41935483870968 percentage.
+The accuracy of fold 5 is 80.64516129032258 percentage.
+The average accuracy of 5 folds is 84.19354838709677 percentage.
+

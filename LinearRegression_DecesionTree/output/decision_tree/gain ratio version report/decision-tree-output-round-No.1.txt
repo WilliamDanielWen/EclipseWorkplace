@@ -1,0 +1,92 @@
+The accuracy reports are at the bottom of this file
+Predicted value on the test set are as followings:
+
+democrat
+democrat
+republican
+democrat(Error prediction on No.4 data record).
+democrat
+democrat
+republican
+democrat
+democrat
+democrat
+republican
+democrat
+democrat
+democrat
+democrat
+republican
+democrat
+democrat
+republican
+democrat
+democrat
+republican
+republican
+republican
+republican
+democrat
+democrat
+democrat
+republican
+democrat(Error prediction on No.30 data record).
+democrat
+democrat
+democrat
+republican
+democrat
+republican
+democrat
+democrat
+democrat
+democrat
+democrat
+republican
+democrat
+democrat
+democrat
+republican
+democrat
+democrat
+democrat
+republican
+republican
+republican
+democrat(Error prediction on No.53 data record).
+democrat
+republican
+republican
+democrat
+democrat
+democrat
+republican
+democrat
+republican(Error prediction on No.62 data record).
+democrat(Error prediction on No.63 data record).
+democrat
+republican
+republican
+democrat
+republican
+republican
+republican
+democrat
+republican
+democrat
+republican(Error prediction on No.74 data record).
+democrat
+democrat
+republican
+republican
+republican
+democrat
+republican
+republican
+democrat
+democrat
+republican
+democrat
+democrat
+
+The accuracy of round-1 is 93.10344827586206 percentage.
