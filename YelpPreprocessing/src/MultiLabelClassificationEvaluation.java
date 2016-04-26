@@ -11,7 +11,12 @@ import java.util.Set;
 
 public class MultiLabelClassificationEvaluation {
 
+	public static void main(String[] args) throws IOException{
 
+		F1_Calculator("randomGuess.csv","developmentSet.csv");
+
+
+	}
 	public static void F1_Calculator(String filePathPredictoin,String filePathTestSet) throws IOException{
 		//read the development set
 		List<Set<String>> predictionList = new ArrayList<Set<String>>();
@@ -126,11 +131,6 @@ public class MultiLabelClassificationEvaluation {
 
 	}
 
-	public static void main(String[] args) throws IOException{
 
-		F1_Calculator("randomGuess.csv","developmentSet.csv");
-
-
-	}
 
 }

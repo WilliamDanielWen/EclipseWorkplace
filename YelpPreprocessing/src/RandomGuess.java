@@ -15,7 +15,7 @@ public class RandomGuess {
 
 		//read the development set
 		List<String[]> developmentSet = new ArrayList<String[]>();
-        File inputFile=new File("developmentSet.csv");
+        File inputFile=new File("data//developmentSet.csv");
 		Scanner scanner = new Scanner(inputFile);
 		String header=scanner.nextLine();
 		while(scanner.hasNextLine()) {
@@ -31,7 +31,7 @@ public class RandomGuess {
 		} 
 		
 		// output the random guess file
-		FileWriter fwriter=new FileWriter("randomGuess.csv");
+		FileWriter fwriter=new FileWriter("data//randomGuess.csv");
 		BufferedWriter out=new BufferedWriter(fwriter);
 		
 		// write the header
