@@ -14,9 +14,10 @@ public class ModelBasedCF {
 		String inputPath="data//rating.csv";
 
 		//  dimension selection of latent vector, which was already done, so we comment these two lined out
-		//String outputPathSelectLatentDimension=inputPath+"_LatentDimSelection.txt";
-		//selectLatentDimension(1, 50,inputPath,outputPathSelectLatentDimension);
-
+		/*
+		String outputPathSelectLatentDimension=inputPath+"_LatentDimSelection.txt"; 
+		selectLatentDimension(1, 50,inputPath,outputPathSelectLatentDimension);
+		*/
 
 		// best dimension of latent vector is 3, which is suggested 
 		// by the result of runnnig parameter selection from 1 to 50
