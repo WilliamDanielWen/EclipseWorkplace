@@ -7,18 +7,21 @@ import java.util.List;
 
 public class ModelBasedCF {
 
+	// By default, we run the model by using a 5
 	public static void main(String[] args) throws IOException{
-		String inputPath="data//u.data";
+
 		
-		// select dimension of 
+		String inputPath="data//rating.csv";
+
+		//  dimension selection of latent vector, which was already done, so we comment these two lined out
 		//String outputPathSelectLatentDimension=inputPath+"_LatentDimSelection.txt";
 		//selectLatentDimension(1, 50,inputPath,outputPathSelectLatentDimension);
-		
-		
+
+
 		// best dimension of latent vector is 3, which is suggested 
 		// by the result of runnnig parameter selection from 1 to 50
 		ModelBasedCF model=new ModelBasedCF(3);
-		
+
 		// output path for RMSE and MAE
 		String outputPathCrossValidation=inputPath+"_CrossValidationResult.txt";
 		FileWriter fwriter=new FileWriter(outputPathCrossValidation);
@@ -27,8 +30,10 @@ public class ModelBasedCF {
 		int foldNum=5;
 		model.corssValidation(inputPath,foldNum,out);
 		out.close();
+		
+		
 	}
-	
+
 	// parameter for regularization
 	private double lambda; 
 
@@ -50,7 +55,7 @@ public class ModelBasedCF {
 
 	//precision threshhold to determine whether the algorithm converges
 	private double convergeThreshold;
-	
+
 	// number of iterations between two times of checking whether the algorithm converges
 	private double convergeCheckWindowSize;
 
@@ -58,13 +63,13 @@ public class ModelBasedCF {
 	public ModelBasedCF(int dim){
 		latentDimension=dim;
 	}
-	
-	
+
+
 	// function used for selecting proper dimension of latent vector
 	// by trying different values between lowerRange and upperRange
 	// with each value, a model will be trained and validated by using 5-fold cross validation and output the average RMSE and MAE 
 	private static void selectLatentDimension(int lowerRange, int upperRange,String inputPath,String outputPath) throws IOException{
-		
+
 		FileWriter fwriter=new FileWriter(outputPath);
 		BufferedWriter out =new BufferedWriter(fwriter);
 		for(int dim=lowerRange;dim<=upperRange;dim++){
@@ -77,27 +82,27 @@ public class ModelBasedCF {
 		}
 		out.close();
 	}
-	
+
 	// run a k-fold cross validation
 	private void corssValidation(String inputPath,int totalFolds,BufferedWriter outWriter) throws IOException{
 		// read the data
-		List<Rating> inputSet=Utility.readData(inputPath);
-		
+		List<Rating> inputSet=Utility.readDataFromCSV(inputPath);
+
 		double rmseSum=0;
 		double maeSum=0;
 		for(int k=1;k<=totalFolds;k++){
 			System.out.println("######## Fold "+k+" begins!########");
 			List<Rating> trainSet=Utility.getTrainSetAtKFold(inputSet, 1, 5);
 			List<Rating> testSet=Utility.getTestSetAtKFold(inputSet, 1, 5);
-			
+
 			// training
 			training(trainSet);
-			
+
 			// validating
 			rmseSum += getRMSE(testSet);
 			maeSum += getMAE(testSet);
 		}
-		
+
 		//output
 		double rmse=rmseSum/(double)totalFolds;
 		System.out.println("\nAverage RMSE is "+ rmse);
@@ -108,7 +113,7 @@ public class ModelBasedCF {
 		// output to file
 		outWriter.write("RMSE = "+rmse+",\t MAE = "+mae);
 		outWriter.newLine();
-		
+
 	}
 
 	//initilize the parameters
@@ -121,7 +126,7 @@ public class ModelBasedCF {
 		predictionUpperBound=5;
 
 		convergeThreshold=0.0000001;
-		
+
 		// for every "convergeCheckWindowSize" number updates
 		//  , calculate the cost function to  check if converges
 		convergeCheckWindowSize=trainSet.size()*0.3;  
@@ -165,7 +170,7 @@ public class ModelBasedCF {
 	// train the model
 	public void training(List<Rating> trainSet) throws FileNotFoundException {
 		System.out.println("Training begins... ");
-		
+
 		// initilize parameters
 		initlization(trainSet);
 
@@ -174,14 +179,14 @@ public class ModelBasedCF {
 		double cost_new;
 		double delta_cost;
 		boolean converge=false;		
-		
-		
+
+
 		int epoch=1;
 		int updateNum=0;
-		
+
 		// number of updates performed since the last tiem check of converge
 		int convergeCheckProgress=0;
-		
+
 		// loop to update userMatrix and itemMatrix until converge 
 		// by using stochastic gradient descent method
 		while(!converge){
@@ -198,15 +203,15 @@ public class ModelBasedCF {
 				double predicted_score=predict(u,i);
 				double[] p_u=userMatrix.get(u);
 				double[] q_i=itemMatrix.get(i);
-				
-			
-				
+
+
+
 				// update p_u
 				double[] pu_delta= Utility.vectorMinus(  Utility.vectorScale(q_i,true_score-predicted_score) , Utility.vectorScale(p_u,lambda) );
 				double[] pu_new=Utility.vectorPlus( p_u ,Utility.vectorScale(pu_delta,eta) );
 				userMatrix.put(u, pu_new);
 
-				
+
 				// update q_i
 				double[] qi_delta= Utility.vectorMinus(  Utility.vectorScale(p_u,true_score-predicted_score) , Utility.vectorScale(q_i,lambda) );
 				double[] qi_new=Utility.vectorPlus( q_i ,Utility.vectorScale(qi_delta,eta));
@@ -216,7 +221,7 @@ public class ModelBasedCF {
 				// check if converge
 				convergeCheckProgress++;
 				if(convergeCheckProgress>=convergeCheckWindowSize){
-					
+
 					cost_new=getCost(trainSet);
 					delta_cost=cost_new-cost_old;
 					if(delta_cost<convergeThreshold){
@@ -229,7 +234,7 @@ public class ModelBasedCF {
 				}
 
 				updateNum++;
-				
+
 			}
 
 			epoch++;
@@ -327,7 +332,43 @@ public class ModelBasedCF {
 		return cost;
 	}
 
+	// randomly guess a score for every entry in the given validation set and then get the RMSE
+	private double getBaselineRMSE(List<Rating> testSet) throws IOException{
+		double rmse=0;		
 
+		// 1. calculate the square error
+		for(int j=0;j<testSet.size();j++){
+			// radomly guess a number from 1-5
+			double predicted_score=randomPredict();
+			double true_score=testSet.get(j).score;
+			rmse += Math.pow(predicted_score-true_score, 2); 
+		}
+		//2. get the rmse
+		double n=testSet.size();
+		rmse = rmse/n;
+		rmse = Math.sqrt(rmse);
+		return rmse;
+	}
+
+	// randomly guess a score for every entry in the given validation set and then get the MAE
+	private double getBaselineMAE(List<Rating> testSet) throws IOException{
+		double mae=0;
+		// 1. calculate the sum 
+		for(int j=0;j<testSet.size();j++){
+
+			int u=testSet.get(j).user_id;
+			int i=testSet.get(j).item_id;
+			double predicted_score=randomPredict();
+			double true_score=testSet.get(j).score;
+
+			mae += Math.abs(predicted_score-true_score); 
+		}
+		//2. get the mae
+		double n=testSet.size();
+		mae = mae/n;
+
+		return mae;
+	}
 
 }
 

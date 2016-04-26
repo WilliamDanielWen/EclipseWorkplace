@@ -1,5 +1,8 @@
+import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -18,30 +21,8 @@ class Rating  {
 	}
 }
 
+// Utilities of ModelBasedCF
 public class Utility{
-
-	public static List<Rating> readData(String path) throws FileNotFoundException {
-
-		List<Rating> inputSet = new ArrayList<Rating>();
-		File inputFile=new File(path);
-		Scanner scanner = new Scanner(inputFile);
-		while(scanner.hasNextLine()) {
-			String line = scanner.nextLine();
-			if (line.isEmpty()){
-				continue;
-			}
-			String[] content=line.split("\t");
-			int user_id=Integer.parseInt(content[0]);
-			int item_id=Integer.parseInt(content[1]);
-			double score=Double.parseDouble(content[2]);
-			Rating r=new Rating(user_id,item_id,score);
-			inputSet.add(r);
-		}
-		Random rand=new Random(999);
-		Collections.shuffle(inputSet,rand);
-		
-		return inputSet;
-	}
 
 	public static List<Rating> getTestSetAtKFold(List<Rating> inputSet,int fold, int foldNum){
 		List<Rating> testSet=new ArrayList<Rating>();
@@ -94,7 +75,7 @@ public class Utility{
 		return result;
 	}
 
-	
+
 	// scale each component in vector_a by scalar
 	public static double[] vectorScale(double[] vector_a, double scalar){
 		double[] result=new double[vector_a.length];
@@ -138,6 +119,102 @@ public class Utility{
 		Random rand=new Random(2016);
 		int result=lowerBound+rand.nextInt(upperBound-lowerBound);
 		return result;
+	}
+
+	// read rating from csv file 
+	public static List<Rating> readDataFromCSV(String path) throws FileNotFoundException {
+
+		List<Rating> inputSet = new ArrayList<Rating>();
+		File inputFile=new File(path);
+		Scanner scanner = new Scanner(inputFile);
+		scanner.nextLine();// skip the header
+		while(scanner.hasNextLine()) {
+			String line = scanner.nextLine();
+			if (line.isEmpty()){
+				continue;
+			}
+			String[] content=line.split(",");
+			int user_id=Integer.parseInt(content[0]);
+			int item_id=Integer.parseInt(content[1]);
+			double score=Double.parseDouble(content[2]);
+			Rating r=new Rating(user_id,item_id,score);
+			inputSet.add(r);
+		}
+		Random rand=new Random(999);
+		Collections.shuffle(inputSet,rand);
+
+		return inputSet;
+	}
+	
+	public static List<Rating> readData(String path) throws FileNotFoundException {
+
+		List<Rating> inputSet = new ArrayList<Rating>();
+		File inputFile=new File(path);
+		Scanner scanner = new Scanner(inputFile);
+		
+		while(scanner.hasNextLine()) {
+			String line = scanner.nextLine();
+			if (line.isEmpty()){
+				continue;
+			}
+			String[] content=line.split("\t");
+			int user_id=Integer.parseInt(content[0]);
+			int item_id=Integer.parseInt(content[1]);
+			double score=Double.parseDouble(content[2]);
+			Rating r=new Rating(user_id,item_id,score);
+			inputSet.add(r);
+		}
+		Random rand=new Random(999);
+		Collections.shuffle(inputSet,rand);
+
+		return inputSet;
+	}
+	
+	// write a dataSet into a csv file
+	public static void wirteDataToCSV(List<Rating> dataSet,String outputPath) throws IOException{
+		FileWriter fwriter=new FileWriter(outputPath);
+		BufferedWriter out=new BufferedWriter(fwriter);
+		// write the header
+		out.write("user_id,item_id,rating_score");
+		out.newLine();
+		for (int i = 0; i < dataSet.size(); i++) {
+			Rating r=dataSet.get(i);
+			out.write(r.user_id+","+r.item_id+","+r.score);
+			out.newLine();
+		}
+		out.close();
+	}
+	
+	// split input data set with path of "inputPath" into a training set and a test set
+	// training set size= (input data set size)*proportionTrainset
+	// test set size= (input data set size)*(1-proportionTrainset)
+	public static void generateTestAndTrainData(String inputPath, double proportionTrainset,String trainSetPath,String testSetPath) throws IOException{
+
+		List<Rating> inputSet=readDataFromCSV(inputPath);
+		// randomlize the input set
+		Random rand=new Random(System.currentTimeMillis());
+		Collections.shuffle(inputSet, rand);
+
+		int inputSetSize=inputSet.size();
+		int trainSetSize=(int) (inputSetSize*proportionTrainset);
+
+		// get the trainSet
+		List<Rating> trainSet = new ArrayList<Rating>();
+		for (int i = 0; i < trainSetSize; i++) {
+			trainSet.add(inputSet.get(i));
+		}
+
+		// get the testSet
+		List<Rating> testSet = new ArrayList<Rating>();
+		for (int i = trainSetSize; i < inputSetSize; i++) {
+			testSet.add(inputSet.get(i));
+		}
+
+		// output to file
+		wirteDataToCSV(trainSet,trainSetPath);
+		wirteDataToCSV(testSet,testSetPath);
+
+
 	}
 
 }
