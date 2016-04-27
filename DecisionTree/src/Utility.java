@@ -25,7 +25,7 @@ public class Utility {
     }
     
   //Splits a dataset into multiple data sets according to the given attribute.
-  	public static Instances[] getSplittedDataSets(Instances dataSet, Attribute attrib) {
+  	public static Instances[] splitDataSets(Instances dataSet, Attribute attrib) {
   		
   		Instances[] splittedDataSets = new Instances[attrib.numValues()];
 

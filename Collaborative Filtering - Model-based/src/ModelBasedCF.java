@@ -10,14 +10,8 @@ public class ModelBasedCF {
 	// By default, we run the model by using a 5
 	public static void main(String[] args) throws IOException{
 
-		
-		String inputPath="data//rating.csv";
 
-		//  dimension selection of latent vector, which was already done, so we comment these two lined out
-		/*
-		String outputPathSelectLatentDimension=inputPath+"_LatentDimSelection.txt"; 
-		selectLatentDimension(1, 50,inputPath,outputPathSelectLatentDimension);
-		*/
+		String inputPath="data//rating.csv";
 
 		// best dimension of latent vector is 3, which is suggested 
 		// by the result of runnnig parameter selection from 1 to 50
@@ -31,8 +25,8 @@ public class ModelBasedCF {
 		int foldNum=5;
 		model.corssValidation(inputPath,foldNum,out);
 		out.close();
-		
-		
+
+
 	}
 
 	// parameter for regularization
@@ -85,16 +79,16 @@ public class ModelBasedCF {
 	}
 
 	// run a k-fold cross validation
-	private void corssValidation(String inputPath,int totalFolds,BufferedWriter outWriter) throws IOException{
+	private void corssValidation(String inputPath,int K,BufferedWriter outWriter) throws IOException{
 		// read the data
 		List<Rating> inputSet=Utility.readDataFromCSV(inputPath);
 
 		double rmseSum=0;
 		double maeSum=0;
-		for(int k=1;k<=totalFolds;k++){
-			System.out.println("######## Fold "+k+" begins!########");
-			List<Rating> trainSet=Utility.getTrainSetAtKFold(inputSet, 1, 5);
-			List<Rating> testSet=Utility.getTestSetAtKFold(inputSet, 1, 5);
+		for(int i=1;i<=K;i++){
+			System.out.println("######## Fold "+i+" begins!########");
+			List<Rating> trainSet=Utility.getTrainSetInKFold(inputSet, i, K);
+			List<Rating> testSet=Utility.getTestSetAtKFold(inputSet, i, K);
 
 			// training
 			training(trainSet);
@@ -105,66 +99,15 @@ public class ModelBasedCF {
 		}
 
 		//output
-		double rmse=rmseSum/(double)totalFolds;
+		double rmse=rmseSum/(double)K;
 		System.out.println("\nAverage RMSE is "+ rmse);
 
-		double mae=maeSum/(double)totalFolds;
+		double mae=maeSum/(double)K;
 		System.out.println("Average MAE is "+ mae);
 
 		// output to file
 		outWriter.write("RMSE = "+rmse+",\t MAE = "+mae);
 		outWriter.newLine();
-
-	}
-
-	//initilize the parameters
-	private void initlization(List<Rating> trainSet){
-
-		lambda=0.0001;
-		eta=0.032; // optimal 0.032 const
-
-		predictionLowerBound=1;
-		predictionUpperBound=5;
-
-		convergeThreshold=0.0000001;
-
-		// for every "convergeCheckWindowSize" number updates
-		//  , calculate the cost function to  check if converges
-		convergeCheckWindowSize=trainSet.size()*0.3;  
-
-		// init bound for every p_u[] and q_i[]
-		double lower_bound_init=1;
-		double upper_bound_init=1.15;
-
-		userMatrix=new Hashtable<Integer,double[]>();
-		itemMatrix=new Hashtable<Integer,double[]>();
-
-		for(int j=0;j<trainSet.size();j++){
-
-			int u=trainSet.get(j).user_id;
-			int i=trainSet.get(j).item_id;
-
-			if(!userMatrix.containsKey(u)){
-				double[] p_u=new double[latentDimension];
-				for(int k=0;k<p_u.length;k++){
-					// a random number between 0 and initUpperBound
-					p_u[k]=Utility.randomDouble(lower_bound_init,upper_bound_init);
-
-				}
-				userMatrix.put(u, p_u);// put into u_th row 
-			}
-
-			if(!itemMatrix.containsKey(i)){
-				double[] q_i=new double[latentDimension];
-				for(int k=0;k<q_i.length;k++){
-					// a random number between 0 and initUpperBound
-
-					q_i[k]=Utility.randomDouble(lower_bound_init,upper_bound_init);
-				}
-				itemMatrix.put(i, q_i);// put int i_th column
-			}
-
-		}
 
 	}
 
@@ -245,6 +188,58 @@ public class ModelBasedCF {
 		System.out.println("Training completed! ");
 	}
 
+
+	//initilize the parameters
+	private void initlization(List<Rating> trainSet){
+
+		lambda=0.0001;
+		eta=0.032; // optimal 0.032 const
+
+		predictionLowerBound=1;
+		predictionUpperBound=5;
+
+		convergeThreshold=0.0000001;
+
+		// for every "convergeCheckWindowSize" number updates
+		//  , calculate the cost function to  check if converges
+		convergeCheckWindowSize=trainSet.size()*0.3;  
+
+		// init bound for every p_u[] and q_i[]
+		double lower_bound_init=1;
+		double upper_bound_init=1.15;
+
+		userMatrix=new Hashtable<Integer,double[]>();
+		itemMatrix=new Hashtable<Integer,double[]>();
+
+		for(int j=0;j<trainSet.size();j++){
+
+			int u=trainSet.get(j).user_id;
+			int i=trainSet.get(j).item_id;
+
+			if(!userMatrix.containsKey(u)){
+				double[] p_u=new double[latentDimension];
+				for(int k=0;k<p_u.length;k++){
+					// a random number between 0 and initUpperBound
+					p_u[k]=Utility.randomDouble(lower_bound_init,upper_bound_init);
+
+				}
+				userMatrix.put(u, p_u);// put into u_th row 
+			}
+
+			if(!itemMatrix.containsKey(i)){
+				double[] q_i=new double[latentDimension];
+				for(int k=0;k<q_i.length;k++){
+					// a random number between 0 and initUpperBound
+
+					q_i[k]=Utility.randomDouble(lower_bound_init,upper_bound_init);
+				}
+				itemMatrix.put(i, q_i);// put int i_th column
+			}
+
+		}
+
+	}
+
 	// predict the score according to the user_id and item_id
 	public double predict(int user_id,int item_id){
 		double result=0;
@@ -267,6 +262,24 @@ public class ModelBasedCF {
 		double predicted_score=0;
 		predicted_score=Utility.randomInteger((int)predictionLowerBound,(int)predictionUpperBound);
 		return predicted_score;
+	}
+
+	//get the cost function value on the given data set
+	private double getCost(List<Rating> dataSet){
+
+		double cost=0;
+		for(int j=0;j<dataSet.size();j++){
+
+			int u=dataSet.get(j).user_id;
+			int i=dataSet.get(j).item_id;
+			double true_score=dataSet.get(j).score;
+			double predicted_score=predict(u,i);
+			double[] p_u=userMatrix.get(u);
+			double[] q_i=itemMatrix.get(i);
+
+			cost += (true_score-predicted_score)*(true_score-predicted_score)+lambda*Utility.vectorSquareSum(p_u)*Utility.vectorSquareSum(q_i);
+		}
+		return cost;
 	}
 
 
@@ -314,24 +327,6 @@ public class ModelBasedCF {
 		return mae;
 	}
 
-
-	//get the cost function value on the given data set
-	private double getCost(List<Rating> dataSet){
-
-		double cost=0;
-		for(int j=0;j<dataSet.size();j++){
-
-			int u=dataSet.get(j).user_id;
-			int i=dataSet.get(j).item_id;
-			double true_score=dataSet.get(j).score;
-			double predicted_score=predict(u,i);
-			double[] p_u=userMatrix.get(u);
-			double[] q_i=itemMatrix.get(i);
-
-			cost += (true_score-predicted_score)*(true_score-predicted_score)+lambda*Utility.vectorSquareSum(p_u)*Utility.vectorSquareSum(q_i);
-		}
-		return cost;
-	}
 
 	// randomly guess a score for every entry in the given validation set and then get the RMSE
 	private double getBaselineRMSE(List<Rating> testSet) throws IOException{

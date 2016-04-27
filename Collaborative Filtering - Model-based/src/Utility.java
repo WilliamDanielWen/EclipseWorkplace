@@ -9,7 +9,7 @@ import java.util.List;
 import java.util.Random;
 import java.util.Scanner;
 
-
+// the class used to store the information of the rating from a user to an item
 class Rating  {
 	public int user_id;
 	public int item_id;
@@ -24,27 +24,50 @@ class Rating  {
 // Utilities of ModelBasedCF
 public class Utility{
 
-	public static List<Rating> getTestSetAtKFold(List<Rating> inputSet,int fold, int foldNum){
+	/*  
+	 * @params: inputSet is the whole data set used for K folds cross validation
+	 * @params: foldIndex indicates the index of desired fold out of K folds
+	 * @params: K indicates the total number of folds
+	 * returns  the train set of "foldIndex"-th fold out of K folds
+	 */
+	public static List<Rating> getTrainSetInKFold(List<Rating> inputSet,int foldIndex, int K){
+		List<Rating> trainSet=new ArrayList<Rating>(inputSet);
+		
+		int foldSize=inputSet.size()/K;
+		int testStartIndex=(foldIndex-1)*foldSize;
+		int testEndIndex=inputSet.size()-1;  // initilize  testEndIndex as the test set end index for k
+		
+		// test set end index for fold 1...k-1
+		if(foldIndex!=K) testEndIndex=foldIndex*foldSize; 
+
+		
+		for(int i=testEndIndex;i>=testStartIndex;i--){
+			trainSet.remove(i);
+		}
+		return trainSet;
+	}
+
+	/*  
+	 * @params: inputSet is the whole data set used for K folds cross validation
+	 * @params: foldIndex indicates the index of desired fold out of K folds
+	 * @params: K indicates the total number of folds
+	 * returns  the test set of "foldIndex"-th fold out of K folds
+	 */
+	public static List<Rating> getTestSetAtKFold(List<Rating> inputSet,int foldIndex, int K){
 		List<Rating> testSet=new ArrayList<Rating>();
-		int testStartIndex=(fold-1)*inputSet.size()/foldNum;
-		int testEndIndex=fold*inputSet.size()/foldNum;
+		int foldSize=inputSet.size()/K;
+		int testStartIndex=(foldIndex-1)*foldSize;
+		int testEndIndex=inputSet.size()-1;  // initilize  testEndIndex as the test set end index for k
+		
+		// test set end index for fold 1...k-1
+		if(foldIndex!=K) testEndIndex=foldIndex*foldSize; 
 		for(int i=testStartIndex;i<testEndIndex;i++){
 			Rating r=inputSet.get(i);
 			testSet.add(r);
 		}
 		return testSet;
 	}
-
-	public static List<Rating> getTrainSetAtKFold(List<Rating> inputSet,int fold, int foldNum){
-		List<Rating> trainSet=new ArrayList<Rating>(inputSet);
-		int testStartIndex=(fold-1)*inputSet.size()/foldNum;
-		int testEndIndex=fold*inputSet.size()/foldNum;
-		for(int i=testStartIndex;i<testEndIndex;i++){
-			trainSet.remove(i);
-		}
-		return trainSet;
-	}
-
+	
 	// we assume the dimension of vector_a and vector_b is the same
 	// return the dot product of vector_a and vector_b
 	public static double dotProduct(double[] vector_a, double[] vector_b){
@@ -145,31 +168,9 @@ public class Utility{
 
 		return inputSet;
 	}
-	
-	public static List<Rating> readData(String path) throws FileNotFoundException {
 
-		List<Rating> inputSet = new ArrayList<Rating>();
-		File inputFile=new File(path);
-		Scanner scanner = new Scanner(inputFile);
-		
-		while(scanner.hasNextLine()) {
-			String line = scanner.nextLine();
-			if (line.isEmpty()){
-				continue;
-			}
-			String[] content=line.split("\t");
-			int user_id=Integer.parseInt(content[0]);
-			int item_id=Integer.parseInt(content[1]);
-			double score=Double.parseDouble(content[2]);
-			Rating r=new Rating(user_id,item_id,score);
-			inputSet.add(r);
-		}
-		Random rand=new Random(999);
-		Collections.shuffle(inputSet,rand);
 
-		return inputSet;
-	}
-	
+
 	// write a dataSet into a csv file
 	public static void wirteDataToCSV(List<Rating> dataSet,String outputPath) throws IOException{
 		FileWriter fwriter=new FileWriter(outputPath);
@@ -184,7 +185,7 @@ public class Utility{
 		}
 		out.close();
 	}
-	
+
 	// split input data set with path of "inputPath" into a training set and a test set
 	// training set size= (input data set size)*proportionTrainset
 	// test set size= (input data set size)*(1-proportionTrainset)

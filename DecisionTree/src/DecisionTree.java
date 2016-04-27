@@ -10,15 +10,15 @@ import weka.core.NoSupportForMissingValuesException;
 import weka.core.Utils;
 
 /*
- * Class for constructing an unpruned decision tree based on
- * the ID3 algorithm. Can only deal with categorical attributes.
- * No missing values allowed. Empty leaves may result in unclassified instances.
+ * Class for constructing an unpruned decision tree based on the ID3 and C4.5. 
+ * Only categorical attributes are allowed.
+ * No missing values allowed.
  */
 public class DecisionTree  {
 
 	public static void main(String[] args) throws Exception{
 		//String trainSetPath = Utility.readFile("data\\decision_tree\\weather-nominal.arff");
-		String trainSetPath="data//decision_tree//voting-records.arff";
+		String trainSetPath="data//voting-records.arff";
 		Instances trainSet = new Instances(new BufferedReader(new FileReader(trainSetPath)));
 
 		// set class label according to the class label index
@@ -41,11 +41,8 @@ public class DecisionTree  {
 	//Class label if this node/tree is leaf.
 	private double leafClassLabel;
 
-	//Class distribution if node is leaf.
-	private double[] m_Distribution;
-
-	// Class attribute of data set.
-	private Attribute m_ClassAttribute;
+	//probaility distribution of class label of the leaf node if this node is leaf.
+	private double[] classLabelCount;
 
 
 	/*  
@@ -63,7 +60,14 @@ public class DecisionTree  {
 		for (int f = 0; f < foldsNum; f++) {
 			Instances trainSet = dataSet.trainCV(foldsNum, f); // training set in fold-f
 			Instances testSet = dataSet.testCV(foldsNum, f); // test set in fold-f
-			training(trainSet); // begin training
+
+			//By default we use the ID3
+			trainingDecisionTreeByID3(trainSet); // begin training
+
+			// Alternatively we can use C4.5 by uncommenting the following line and commenting the above line  
+			//trainingDecisionTreeByC4_5(trainSet); // begin training
+
+
 			List<Double> predictedResults=new ArrayList<Double>();
 			for(int i =0; i<testSet.numInstances();i++) {
 				//make prediction
@@ -87,74 +91,174 @@ public class DecisionTree  {
 		}// end loop for cross-validation
 	}
 
-	//Builds a decision tree based on the given train set.
-	public void training(Instances trainSet) throws Exception {
+	//Builds a decision tree based on the given train set by using ID3.
+	public void trainingDecisionTreeByID3(Instances trainSet) throws Exception {
 		trainSet = new Instances(trainSet);
 		// call the build Tree function which recursively build a decision tree 
-		this.buildTree(trainSet);
+		this.buildTreeNodeByID3(trainSet);
 	}
 
-	
-	// recursively build a decision tree according to the given data set 
-	private void buildTree(Instances dataSet) throws Exception {
-		if(dataSet.numInstances() == 0) {//  stop condition for recursion
-			this.splittingAttribute = null;
-			this.leafClassLabel = Instance.missingValue();
-			this.m_Distribution = new double[dataSet.numClasses()];
-		} else { //
+	//Builds a decision tree based on the given train set by using C4.5.
+	public void trainingDecisionTreeByC4_5(Instances trainSet) throws Exception {
+		trainSet = new Instances(trainSet);
+		// call the build Tree function which recursively build a decision tree 
+		this.buildTreeNodeByC4_5(trainSet);
+	}
 
-			// step 1: calculate the information gain/ gain ratio  of all the candidate attribute
-			double[] gains = new double[dataSet.numAttributes()];
-		
+
+	// recursively build a decision node according to the given data set by the ID3  
+	private void buildTreeNodeByID3(Instances dataSet) throws Exception {
+		if(dataSet.numInstances() == 0) {
+
+			//  stop condition for recursion: 
+			//  There are no samples left ¨C use majority voting in the parent partition
+			// 	so we do nothing here    
 			
+		} else { 
+
+			// there are still samples left 
+			
+			// step 1: calculate the information gain of all the candidate attribute
+			double[] infoGains = new double[dataSet.numAttributes()];
+
+
 			Enumeration possibleAttributes = dataSet.enumerateAttributes();
 			while(possibleAttributes.hasMoreElements()){
-				
+
 				Attribute candidateAttribute = (Attribute)possibleAttributes.nextElement();
-				
-				 // use weka's Attribute.index() to map Attribute into a index
+
+				// use weka's Attribute.index() to map Attribute into a index
 				int attribuIndex=candidateAttribute.index();
-				
+
 				// we use information gain as default  
-				gains[attribuIndex] = this.getInfoGain(dataSet, candidateAttribute);
-				
-				//alternatively, we can use the gain ratio  by uncomment the following line and comment above line
-				//gains[attribuIndex] = this.getInfoGain(dataSet, candidateAttribute);
+				infoGains[attribuIndex] = this.getInfoGain(dataSet, candidateAttribute);
+
 			}
-			
-			
+
+
 			// step 2: select the attribute with maximum information gain/ gain ratio to be the splitting point
 			// step2.1 use weka's Utils.maxIndex(double[] array) to find the index of the attribute with maximum information gain/ gain ratio
-			int maxIndex=Utils.maxIndex(gains);
-			// step2.2 use weka's
+			int maxIndex=Utils.maxIndex(infoGains);
+			// step2.2 use weka's Attribute Instances.attribute(int index) to set the best splitting attribute
 			this.splittingAttribute = dataSet.attribute(maxIndex);
 
 
-			// step 3: recursively build 
-			if(Utils.eq(gains[this.splittingAttribute.index()], 0.0D)) {
-				this.splittingAttribute = null;
-				this.m_Distribution = new double[dataSet.numClasses()];
+			// step 3: build the successors of this tree node
+			//         or build the leaf node if all 
+			if(Utils.eq(infoGains[this.splittingAttribute.index()], 0.0D)) {// all the data has the same class label
 
+				this.splittingAttribute = null;
+				this.classLabelCount = new double[dataSet.numClasses()];
+
+
+				Enumeration leafData = dataSet.enumerateInstances();
+				// local variables needed
 				Instance j;
-				for(Enumeration var6 = dataSet.enumerateInstances(); var6.hasMoreElements(); ++this.m_Distribution[(int)j.classValue()]) {
-					j = (Instance)var6.nextElement();
+				int classLabelIndex;
+				while(leafData.hasMoreElements()){
+					j = (Instance)leafData.nextElement();
+
+					// map the class label into a index 
+					classLabelIndex=(int)j.classValue();
+
+					this.classLabelCount[classLabelIndex]++;
 				}
 
-				Utils.normalize(this.m_Distribution);
-				this.leafClassLabel = (double)Utils.maxIndex(this.m_Distribution);
-				this.m_ClassAttribute = dataSet.classAttribute();
+				this.leafClassLabel = (double)Utils.maxIndex(this.classLabelCount);
+
+
 			} else {
-				//Instances[] var7 = this.getSplittedDataSets(dataSet, this.splittingAttribute);
-				Instances[] var7 = Utility.getSplittedDataSets(dataSet, this.splittingAttribute);
+
+				//  get every sub dataset in "dataSet" with different value of splittingAttribute
+				Instances[] set_of_SubDataSet = Utility.splitDataSets(dataSet, this.splittingAttribute);
+
+				// successors number equals to the number of values in the splitting attribute
 				this.successors = new DecisionTree[this.splittingAttribute.numValues()];
 
-				for(int var8 = 0; var8 < this.splittingAttribute.numValues(); ++var8) {
-					this.successors[var8] = new DecisionTree();
-					this.successors[var8].buildTree(var7[var8]);
+				// use every sub dataset got previously to build the successors
+				for(int i = 0; i < this.splittingAttribute.numValues(); ++i) {
+					this.successors[i] = new DecisionTree();
+
+					this.successors[i].buildTreeNodeByID3(set_of_SubDataSet[i]);
 				}
 			}
 		}
 	}
+
+	// recursively build a decision node according to the given data set by the C4.5 
+	private void buildTreeNodeByC4_5(Instances dataSet) throws Exception {
+		if(dataSet.numInstances() == 0) {
+		//  stop condition for recursion: 
+		//  There are no samples left ¨C use majority voting in the parent partition
+		// 	so we do nothing here  
+		} else { 
+			// there are still samples left 
+			
+			// step 1: calculate the gain ratio  of all the candidate attribute
+			double[] gainRatios = new double[dataSet.numAttributes()];
+
+
+			Enumeration possibleAttributes = dataSet.enumerateAttributes();
+			while(possibleAttributes.hasMoreElements()){
+
+				Attribute candidateAttribute = (Attribute)possibleAttributes.nextElement();
+
+				// use weka's Attribute.index() to map Attribute into a index
+				int attribuIndex=candidateAttribute.index();
+
+				gainRatios[attribuIndex] = this.getGainRatio(dataSet, candidateAttribute);
+			}
+
+
+			// step 2: select the attribute with maximum information gain/ gain ratio to be the splitting point
+			// step2.1 use weka's Utils.maxIndex(double[] array) to find the index of the attribute with maximum information gain/ gain ratio
+			int maxIndex=Utils.maxIndex(gainRatios);
+			// step2.2 use weka's Attribute Instances.attribute(int index) to set the best splitting attribute
+			this.splittingAttribute = dataSet.attribute(maxIndex);
+
+
+			// step 3: build the successors of this tree node
+			//         or build the leaf node if all 
+			if(Utils.eq(gainRatios[this.splittingAttribute.index()], 0.0D)) {// all the data has the same class label
+
+				this.splittingAttribute = null;
+				this.classLabelCount = new double[dataSet.numClasses()];
+
+
+				Enumeration leafData = dataSet.enumerateInstances();
+				// local variables needed
+				Instance j;
+				int classLabelIndex;
+				while(leafData.hasMoreElements()){
+					j = (Instance)leafData.nextElement();
+
+					// map the class label into a index 
+					classLabelIndex=(int)j.classValue();
+
+					this.classLabelCount[classLabelIndex]++;
+				}
+
+				this.leafClassLabel = (double)Utils.maxIndex(this.classLabelCount);
+
+
+			} else {
+
+				//  get every sub dataset in "dataSet" with different value of splittingAttribute
+				Instances[] set_of_SubDataSet = Utility.splitDataSets(dataSet, this.splittingAttribute);
+
+				// successors number equals to the number of values in the splitting attribute
+				this.successors = new DecisionTree[this.splittingAttribute.numValues()];
+
+				// use every sub dataset got previously to build the successors
+				for(int i = 0; i < this.splittingAttribute.numValues(); ++i) {
+					this.successors[i] = new DecisionTree();
+
+					this.successors[i].buildTreeNodeByC4_5(set_of_SubDataSet[i]);
+				}
+			}
+		}
+	}
+
 
 	/*  
 	 * @params: dataEntry is a given test data 
@@ -189,7 +293,7 @@ public class DecisionTree  {
 
 		//step2: get all data sets splitted from the given dataSet according to the given attribute 
 		//Instances[] splittedDataSets = this.getSplittedDataSets(dataSet, attrib);
-		Instances[] splittedDataSets = Utility.getSplittedDataSets(dataSet, attrib);
+		Instances[] splittedDataSets = Utility.splitDataSets(dataSet, attrib);
 
 		double dataSetSize=dataSet.numInstances();
 
@@ -221,7 +325,7 @@ public class DecisionTree  {
 
 		//step2: get all data sets splitted from the given dataSet according to the given attribute 
 		//Instances[] splittedDataSets = this.getSplittedDataSets(dataSet, attrib);
-		Instances[] splittedDataSets = Utility.getSplittedDataSets(dataSet, attrib);
+		Instances[] splittedDataSets = Utility.splitDataSets(dataSet, attrib);
 
 		double dataSetSize=dataSet.numInstances();
 
@@ -250,12 +354,12 @@ public class DecisionTree  {
 
 		//step5: get the information gain
 		double infoGain = infoD-info_A_D;
-		
+
 		//step6: get the gain ratio
 		double gain_ratio=infoGain/split_info_A_D;
 		return gain_ratio;
 	}
-	
+
 
 	//Computes the entropy of a dataset.
 	private double getEntropy(Instances data) throws Exception {
@@ -289,34 +393,5 @@ public class DecisionTree  {
 		return totalEntropy;
 
 	}
-
-
-	private String toString(int level) {
-		StringBuffer text = new StringBuffer();
-		if(this.splittingAttribute == null) {
-			if(Instance.isMissingValue(this.leafClassLabel)) {
-				text.append(": null");
-			} else {
-				text.append(": " + this.m_ClassAttribute.value((int)this.leafClassLabel));
-			}
-		} else {
-			for(int j = 0; j < this.splittingAttribute.numValues(); ++j) {
-				text.append("\n");
-
-				for(int i = 0; i < level; ++i) {
-					text.append("|  ");
-				}
-
-				text.append(this.splittingAttribute.name() + " = " + this.splittingAttribute.value(j));
-				text.append(this.successors[j].toString(level + 1));
-			}
-		}
-		return text.toString();
-	}
-
-	public String toString() {
-		return this.m_Distribution == null && this.successors == null?"DecisionTree: No model built yet.":"DecisionTree\n\n" + this.toString(0);
-	}
-
 
 }
