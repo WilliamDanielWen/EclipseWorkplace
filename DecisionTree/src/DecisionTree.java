@@ -7,6 +7,7 @@ import weka.core.Attribute;
 import weka.core.Instance;
 import weka.core.Instances;
 import weka.core.NoSupportForMissingValuesException;
+import weka.core.UnsupportedAttributeTypeException;
 import weka.core.Utils;
 
 /*
@@ -65,13 +66,13 @@ public class DecisionTree  {
 			trainingDecisionTreeByID3(trainSet); // begin training
 
 			// Alternatively we can use C4.5 by uncommenting the following line and commenting the above line  
-			//trainingDecisionTreeByC4_5(trainSet); // begin training
+			//trainingDecisionTreeByC45(trainSet); 
 
 
 			List<Double> predictedResults=new ArrayList<Double>();
 			for(int i =0; i<testSet.numInstances();i++) {
 				//make prediction
-				double predection =predict(testSet.instance(i));
+				double predection =classify(testSet.instance(i));
 				predictedResults.add(predection);
 			}
 			accuracies[f]= Utility.getAccuracy(testSet,predictedResults);
@@ -95,14 +96,14 @@ public class DecisionTree  {
 	public void trainingDecisionTreeByID3(Instances trainSet) throws Exception {
 		trainSet = new Instances(trainSet);
 		// call the build Tree function which recursively build a decision tree 
-		this.buildTreeNodeByID3(trainSet);
+		buildTreeNodeByID3(trainSet);
 	}
 
 	//Builds a decision tree based on the given train set by using C4.5.
-	public void trainingDecisionTreeByC4_5(Instances trainSet) throws Exception {
+	public void trainingDecisionTreeByC45(Instances trainSet) throws Exception {
 		trainSet = new Instances(trainSet);
 		// call the build Tree function which recursively build a decision tree 
-		this.buildTreeNodeByC4_5(trainSet);
+		buildTreeNodeByC45(trainSet);
 	}
 
 
@@ -113,11 +114,11 @@ public class DecisionTree  {
 			//  stop condition for recursion: 
 			//  There are no samples left ¨C use majority voting in the parent partition
 			// 	so we do nothing here    
-			
+
 		} else { 
 
 			// there are still samples left 
-			
+
 			// step 1: calculate the information gain of all the candidate attribute
 			double[] infoGains = new double[dataSet.numAttributes()];
 
@@ -186,14 +187,14 @@ public class DecisionTree  {
 	}
 
 	// recursively build a decision node according to the given data set by the C4.5 
-	private void buildTreeNodeByC4_5(Instances dataSet) throws Exception {
+	private void buildTreeNodeByC45(Instances dataSet) throws Exception {
 		if(dataSet.numInstances() == 0) {
-		//  stop condition for recursion: 
-		//  There are no samples left ¨C use majority voting in the parent partition
-		// 	so we do nothing here  
+			//  stop condition for recursion: 
+			//  There are no samples left ¨C use majority voting in the parent partition
+			// 	so we do nothing here  
 		} else { 
 			// there are still samples left 
-			
+
 			// step 1: calculate the gain ratio  of all the candidate attribute
 			double[] gainRatios = new double[dataSet.numAttributes()];
 
@@ -253,7 +254,7 @@ public class DecisionTree  {
 				for(int i = 0; i < this.splittingAttribute.numValues(); ++i) {
 					this.successors[i] = new DecisionTree();
 
-					this.successors[i].buildTreeNodeByC4_5(set_of_SubDataSet[i]);
+					this.successors[i].buildTreeNodeByC45(set_of_SubDataSet[i]);
 				}
 			}
 		}
@@ -264,7 +265,8 @@ public class DecisionTree  {
 	 * @params: dataEntry is a given test data 
 	 * returns the predicted class label of dataEntry using the trained decision tree. 
 	 */
-	public double predict(Instance dataEntry) throws NoSupportForMissingValuesException {
+	public double classify(Instance dataEntry) throws NoSupportForMissingValuesException {
+
 		double predictedLabel;
 		if(splittingAttribute == null){ // leaf node detected
 			// stop recursion if leaf node is found
@@ -279,10 +281,12 @@ public class DecisionTree  {
 
 			//step3: use the value found in the previous step as an index to find the proper subtree to traverse 
 			//step4: begin next round of recursion by using the subtree found in step3
-			predictedLabel=this.successors[splittingAttriValue].predict(dataEntry);
+			predictedLabel=this.successors[splittingAttriValue].classify(dataEntry);
 		}
 
 		return predictedLabel;
+
+
 
 	}
 
@@ -291,21 +295,21 @@ public class DecisionTree  {
 		//step1: compute the total entropy --Info(D)
 		double infoD = this.getEntropy(dataSet);
 
-		//step2: get all data sets splitted from the given dataSet according to the given attribute 
-		//Instances[] splittedDataSets = this.getSplittedDataSets(dataSet, attrib);
-		Instances[] splittedDataSets = Utility.splitDataSets(dataSet, attrib);
+		//step2: get all data sets split from the given dataSet according to the given attribute 
+		//Instances[] splitDataSets = this.getsplitDataSets(dataSet, attrib);
+		Instances[] splitDataSets = Utility.splitDataSets(dataSet, attrib);
 
 		double dataSetSize=dataSet.numInstances();
 
 		//step3: compute the conditional entropy Info_A_(D)
 		double info_A_D=0.0D;
-		for(int i=0;i<splittedDataSets.length;i++)
+		for(int i=0;i<splitDataSets.length;i++)
 		{
-			//probability of splittedDataSets[i]
-			double prob_i=  splittedDataSets[i].numInstances()/dataSetSize;
+			//probability of splitDataSets[i]
+			double prob_i=  splitDataSets[i].numInstances()/dataSetSize;
 
-			// entropy of splittedDataSets[i]
-			double entropy_i = this.getEntropy(splittedDataSets[i]);
+			// entropy of splitDataSets[i]
+			double entropy_i = this.getEntropy(splitDataSets[i]);
 
 			//info_A_D is summation of all the p_i *entropy_i
 			info_A_D += prob_i*entropy_i;
@@ -323,9 +327,9 @@ public class DecisionTree  {
 		//step1: compute the total entropy --Info(D)
 		double infoD = this.getEntropy(dataSet);
 
-		//step2: get all data sets splitted from the given dataSet according to the given attribute 
-		//Instances[] splittedDataSets = this.getSplittedDataSets(dataSet, attrib);
-		Instances[] splittedDataSets = Utility.splitDataSets(dataSet, attrib);
+		//step2: get all data sets split from the given dataSet according to the given attribute 
+		//Instances[] splitDataSets = this.getsplitDataSets(dataSet, attrib);
+		Instances[] splitDataSets = Utility.splitDataSets(dataSet, attrib);
 
 		double dataSetSize=dataSet.numInstances();
 
@@ -333,13 +337,13 @@ public class DecisionTree  {
 		double info_A_D=0.0D;
 		//step4: get the SplitInfoA(D)
 		double split_info_A_D=0.0D;
-		for(int i=0;i<splittedDataSets.length;i++)
+		for(int i=0;i<splitDataSets.length;i++)
 		{
-			//probability of splittedDataSets[i]
-			double prob_i=  splittedDataSets[i].numInstances()/dataSetSize;
+			//probability of splitDataSets[i]
+			double prob_i=  splitDataSets[i].numInstances()/dataSetSize;
 
-			// entropy of splittedDataSets[i]
-			double entropy_i = this.getEntropy(splittedDataSets[i]);
+			// entropy of splitDataSets[i]
+			double entropy_i = this.getEntropy(splitDataSets[i]);
 
 			//info_A_D is summation of all the p_i *entropy_i
 			info_A_D += prob_i*entropy_i;
