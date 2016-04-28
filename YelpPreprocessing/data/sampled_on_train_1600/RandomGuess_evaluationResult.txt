@@ -1,5 +1,0 @@
-The evaluation results are as followings:
-precision : 47.608630952380935 percentage ;
-recall : 48.76438492063488 percentage ;
-accuracy : 30.917261904761933 percentage ;
-F1-Score : 0.4817957774332554 ;
