@@ -4,6 +4,9 @@ import java.io.IOException;
 public class ContentBasedCF {
 
 	public static void main(String[] args) throws IOException{
-		Utility.extractDenseMatrixToCSV();
+		Utility.extract_FullRatingSet_and_TestSet();
 	}
+	
+	
+	
 }
