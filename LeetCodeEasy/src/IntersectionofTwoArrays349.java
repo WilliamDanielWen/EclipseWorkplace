@@ -31,7 +31,7 @@ public class IntersectionofTwoArrays349 {
 
 		return results;
 	}
-	public int[] intersection6ms(int[] nums1, int[] nums2) {
+	public int[] intersectionTwoHashSet6ms(int[] nums1, int[] nums2) {
 
 		if(nums1.length==0|nums2.length==0){
 			int[] results={};
