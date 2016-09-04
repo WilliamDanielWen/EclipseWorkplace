@@ -12,7 +12,7 @@ import java.util.List;
 import java.util.Random;
 import java.util.Scanner;
 
-public class DivideSupervisedDataSet {
+public class DivideDataSet_ISO_8859_1 {
 	public static void main(String[] args) throws IOException{
 		
 		

@@ -5,7 +5,7 @@ import java.util.List;
 import java.util.Set;
 
 
-public class IntersectionofTwoArrays349 {
+public class No_349_IntersectionofTwoArrays {
 	public int[] intersection11ms(int[] nums1, int[] nums2) {
 		if(nums1.length==0|nums2.length==0){
 			int[] results={};

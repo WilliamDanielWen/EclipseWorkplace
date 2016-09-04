@@ -5,7 +5,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-public class IntersectionOfTwoArraysII350 {
+public class No_350_IntersectionOfTwoArraysII {
 	
 	public int[] intersectionTwoList(int[] nums1, int[] nums2) {
 		
