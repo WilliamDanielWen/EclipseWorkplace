@@ -1,5 +1,5 @@
 
-public class No_344_ReverseString {
+public class No_344_ReverseString{
 	
 	public String reverseString(String s) {
 		if(s==null) return s;

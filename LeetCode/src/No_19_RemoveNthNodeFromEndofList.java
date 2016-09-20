@@ -1,14 +1,14 @@
 
-public class No_19_RemoveNthNodeFromEndofList {
+
 	
 	 // Definition for singly-linked list.
-	  public class ListNode {
+	 class ListNode {
 	      int val;
 	      ListNode next;
 	      ListNode(int x) { val = x; }
 	  }
 	 
-	public class Solution {
+	public class No_19_RemoveNthNodeFromEndofList {
 	    public ListNode removeNthFromEnd(ListNode head, int n) {
 	    	 
 	    	ListNode dummyHead=new ListNode(0);
@@ -31,4 +31,4 @@ public class No_19_RemoveNthNodeFromEndofList {
 	    	return dummyHead.next;
 	    }
 	}
-}
+
