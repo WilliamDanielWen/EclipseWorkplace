@@ -7,7 +7,7 @@ public static void main(String args[] ) throws Exception {
 	int N= Integer.parseInt(scanner.nextLine());
 	
 	while(scanner.hasNextLine()){
-		
+		System.out.println(scanner.nextLine());
 	}
     scanner.close();
 }
