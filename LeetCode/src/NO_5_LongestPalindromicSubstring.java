@@ -14,7 +14,7 @@ public class NO_5_LongestPalindromicSubstring {
         int max_len=0;
         int max_start=0;
         int max_end=0;
-        int[][] dp;
+        boolean[][] dp=new boolean[s_len][s_len];
         
         for (int i=s_len-2;i>=0;i--){
         	for (int j=i+1;j<=s_len-1;j++){
